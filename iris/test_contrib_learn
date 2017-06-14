@@ -4,11 +4,13 @@ import urllib.request
 import numpy as np
 import tensorflow as tf
 
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+current_dir = os.path.dirname(os.path.realpath(__file__))
 # Data sets
-IRIS_TRAINING = "iris_training.csv"
+IRIS_TRAINING = os.path.join(current_dir, "iris_training.csv")
 IRIS_TRAINING_URL = "http://download.tensorflow.org/data/iris_training.csv"
 
-IRIS_TEST = "iris_test.csv"
+IRIS_TEST = os.path.join(current_dir, "iris_test.csv")
 IRIS_TEST_URL = "http://download.tensorflow.org/data/iris_test.csv"
 
 
@@ -34,6 +36,7 @@ def main():
         target_dtype=np.int,
         features_dtype=np.float32)
 
+
     # Specify that all features have real-value data
     feature_columns = [tf.contrib.layers.real_valued_column("", dimension=4)]
 
@@ -41,7 +44,7 @@ def main():
     classifier = tf.contrib.learn.DNNClassifier(feature_columns=feature_columns,
                                                 hidden_units=[10, 20, 10],
                                                 n_classes=3,
-                                                model_dir="/tmp/iris_model")
+                                                model_dir=os.path.join(current_dir, "iris_model"))
 
     # Define the training inputs
     def get_train_inputs():
@@ -51,7 +54,7 @@ def main():
         return x, y
 
     # Fit model.
-    classifier.fit(input_fn=get_train_inputs, steps=2000)
+    classifier.fit(input_fn=get_train_inputs, steps=3000)
 
     # Define the test inputs
     def get_test_inputs():

@@ -23,11 +23,13 @@ import sklearn.model_selection as skmodelselection
 import urllib3
 import pandas as pd
 import quandl
+import itertools
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 
 def test_something():
+    # https://docs.python.org/3.5/library/os.path.html
     script_dir = os.path.dirname(os.path.abspath(__file__))
     target_dir = os.path.join(script_dir, '..', 'test')
     print(os.getcwd())
@@ -641,6 +643,7 @@ def test_urllib3():
     image = tf.image.decode_jpeg(image_string.data, channels=3)
     print(image.shape)
 
+
 def test_save_model():
     w1 = tf.Variable(tf.random_normal(shape=[2]), name='w1')
     w2 = tf.Variable(tf.random_normal(shape=[5]), name='w2')
@@ -652,6 +655,8 @@ def test_save_model():
         saver = tf.train.import_meta_graph('my_test_model.meta')
         saver.restore(sess, tf.train.latest_checkpoint('./'))
         print(sess.run('w1:0'))
+
+
 def test_contrib_learn():
     # Declare list of features. We only have one real-valued feature. There are many
     # other types of columns that are more complicated and useful.
@@ -662,7 +667,7 @@ def test_contrib_learn():
     # logistic regression, linear classification, logistic classification, and
     # many neural network classifiers and regressors. The following code
     # provides an estimator that does linear regression.
-    estimator = tf.contrib.learn.LinearRegressor(feature_columns=features,model_dir="./output")
+    estimator = tf.contrib.learn.LinearRegressor(feature_columns=features, model_dir="./output")
 
     # TensorFlow provides many helper methods to read and set up data sets.
     # Here we use `numpy_input_fn`. We have to tell the function how many batches
@@ -679,6 +684,54 @@ def test_contrib_learn():
     # Here we evaluate how well our model did. In a real example, we would want
     # to use a separate validation and testing data set to avoid overfitting.
     print(estimator.evaluate(input_fn=input_fn))
+
+
+def test_converting_feature_data_to_ensors():
+    feature_column_data = [1, 2.4, 0, 9.9, 3, 120]
+    feature_tensor = tf.constant(feature_column_data)
+    # For sparse, categorical data (data where the majority of values are 0),
+    # you'll instead want to populate a SparseTensor
+    sparse_tensor = tf.SparseTensor(indices=[[0, 1], [2, 4]], values=[6, 0.5], dense_shape=[3, 5])
+    print(sparse_tensor)
+    # This corresponds to the following dense tensor:
+    # [
+    #     [0, 6, 0, 0, 0]
+    #     [0, 0, 0, 0, 0]
+    #     [0, 0, 0, 0, 0.5]
+    # ]
+
+
+def test_boston_predict_MEDV():
+    tf.logging.set_verbosity(tf.logging.INFO)
+    COLUMNS = ["crim", "zn", "indus", "nox", "rm", "age", "dis", "tax", "ptratio", "medv"]
+    FEATURES = ["crim", "zn", "indus", "nox", "rm", "age", "dis", "tax", "ptratio"]
+    LABEL = "medv"
+
+    training_set = pd.read_csv("boston/boston_train.csv", skipinitialspace=True, skiprows=1, names=COLUMNS)
+    test_set = pd.read_csv("boston/boston_test.csv", skipinitialspace=True, skiprows=1, names=COLUMNS)
+    prediction_set = pd.read_csv("boston/boston_predict.csv", skipinitialspace=True, skiprows=1, names=COLUMNS)
+    feature_cols = [tf.contrib.layers.real_valued_column(k) for k in FEATURES]
+    feature_cols = [tf.contrib.layers.real_valued_column(k) for k in FEATURES]
+    regressor = tf.contrib.learn.DNNRegressor(feature_columns=feature_cols, hidden_units=[10, 10],
+                                              model_dir="boston/boston_model")
+
+    def input_fn(data_set):
+        feature_cols = {k: tf.constant(data_set[k].values)
+                        for k in FEATURES}
+        labels = tf.constant(data_set[LABEL].values)
+        return feature_cols, labels
+
+    regressor.fit(input_fn=lambda: input_fn(training_set), steps=5000)
+    ev = regressor.evaluate(input_fn=lambda: input_fn(test_set), steps=1)
+    loss_score = ev["loss"]
+    print("Loss: {0:f}".format(loss_score))
+    y = regressor.predict(input_fn=lambda: input_fn(prediction_set))
+    # .predict() returns an iterator; convert to a list and print predictions
+    predictions = list(itertools.islice(y, 6))
+    print("Predictions: {}".format(str(predictions)))
+
+
+print()
 # test_something()
 # test_image()
 # get_system_info()
@@ -703,4 +756,6 @@ def test_contrib_learn():
 # print(df.head())
 # test_urllib3()
 # test_save_model()
-test_contrib_learn()
+# test_contrib_learn()
+# test_converting_feature_data_to_ensors()
+test_boston_predict_MEDV()
