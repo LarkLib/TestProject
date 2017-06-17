@@ -24,8 +24,77 @@ import urllib3
 import pandas as pd
 import quandl
 import itertools
+import pathlib
+import glob
+import sys
+import datetime
+import time
+import dateutil
+import random
+import calendar
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
+
+def test_path_operation():
+    print("sys.version", sys.version)
+    print("sys.version_info", sys.version_info)
+    print("sys.hexversion", sys.hexversion)
+
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    target_dir = os.path.join(script_dir, '..', 'test')
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    print("script_dis:", script_dir)
+    print("target_dir:", target_dir)
+    print("current_dir:", current_dir)
+    print("os.getcwd():", os.getcwd())
+
+    # https://docs.python.org/3/library/pathlib.html
+    print("pathlib.Path", pathlib.Path("/home/tfuser/") / pathlib.Path("./TestProject") / pathlib.Path("imagenet"))
+
+    current_files_pattern = os.path.join(current_dir, "*.*")
+    print("pathlib.Path(current_dir)", (pathlib.Path(current_dir).glob("*.*")))
+    file_list = glob.glob(current_files_pattern)
+    print("glob.glob(current_dir) has files:", len(file_list))
+    current_files_recursive_pattern = os.path.join(current_dir, "**")
+    file_list = glob.glob(current_files_recursive_pattern, recursive=True)
+    print("glob.glob(current_dir) has files(recursive):", len(file_list))
+    count = 0
+    for file in glob.iglob(current_files_pattern):
+        # print(file)
+        count += 1
+    print("glob.iglob(current_dir):", count)
+
+    # https://docs.python.org/3.7/library/datetime.html
+    # https://docs.python.org/3/library/time.html
+    # https://docs.python.org/3/library/calendar.html#calendar.TextCalendar
+    print("time.time() (seconds):", time.time())
+    print("time.ctime() Convert a time in seconds since the Epoch to a string in local time.")
+    print("time.ctime():", time.ctime(), ",time.ctime(3000):", time.ctime(3000), ",type:", type(time.ctime()))
+    print("time.gmtime():", time.gmtime())
+    print("time.localtime():", time.localtime(), ",time.timezone:", time.timezone, ",time.tzname:", time.tzname)
+    print("datetime.datetime.now():", datetime.datetime.now())
+    print("datetime.datetime.utcnow():", datetime.datetime.utcnow())
+    current_time = datetime.datetime.now()
+    delta = datetime.timedelta(days=random.randrange(0, 3650, 3),
+                               hours=random.randrange(0, 24),
+                               minutes=random.randrange(0, 60),
+                               seconds=random.randrange(0, 60),
+                               milliseconds=random.randrange(0, 1000),
+                               microseconds=random.randrange(0, 1000))
+    before_time = current_time - delta
+    print("current_time:", current_time, ",delta:", delta, ",before_time:", before_time)
+    time.sleep(random.random() * 3)
+    print("datetime.datetime.now()-current_time", datetime.datetime.now() - current_time)
+    print("current_time.replace(year=current_time.year+3):", current_time.replace(year=current_time.year + 3))
+    print("current_time+relativedelta:",
+          current_time + dateutil.relativedelta.relativedelta(years=+3, months=+1, days=-10))
+
+    print("calendar.LocaleTextCalendar().formatyear(2016):\r\n",calendar.LocaleTextCalendar().formatyear(2016))
+    print("calendar.LocaleHTMLCalendar().formatyear(2016):\r\n",calendar.LocaleHTMLCalendar().formatmonth(2016,6))
+
+    # https://docs.python.org/3/library/random.html
+    print(random.choice(['win', 'lose', 'draw', 'four', 'two', 'ace', 'three']))
 
 
 def test_something():
@@ -758,4 +827,5 @@ print()
 # test_save_model()
 # test_contrib_learn()
 # test_converting_feature_data_to_ensors()
-test_boston_predict_MEDV()
+# test_boston_predict_MEDV()
+test_path_operation()
