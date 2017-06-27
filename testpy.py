@@ -36,11 +36,12 @@ import calendar
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 
-def test_path_operation():
+def test_some_operation():
     print("sys.version", sys.version)
     print("sys.version_info", sys.version_info)
     print("sys.hexversion", sys.hexversion)
 
+    default = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'imagenet')
     script_dir = os.path.dirname(os.path.abspath(__file__))
     target_dir = os.path.join(script_dir, '..', 'test')
     current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -48,6 +49,7 @@ def test_path_operation():
     print("target_dir:", target_dir)
     print("current_dir:", current_dir)
     print("os.getcwd():", os.getcwd())
+    print(default)
 
     # https://docs.python.org/3/library/pathlib.html
     print("pathlib.Path", pathlib.Path("/home/tfuser/") / pathlib.Path("./TestProject") / pathlib.Path("imagenet"))
@@ -828,4 +830,4 @@ print()
 # test_contrib_learn()
 # test_converting_feature_data_to_ensors()
 # test_boston_predict_MEDV()
-test_path_operation()
+test_some_operation()
